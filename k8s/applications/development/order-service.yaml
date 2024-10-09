@@ -1,55 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalog-service
+  name: order-service
   labels:
-    app: catalog-service
+    app: order-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: catalog-service
+      app: order-service
   template:
     metadata:
       labels:
-        app: catalog-service
+        app: order-service
     spec:
       containers:
-        - name: catalog-service
-          image: catalog-service
+        - name: order-service
+          image: order-service
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
               exec:
                 command: [ "sh", "-c", "sleep 5" ]
           ports:
-            - containerPort: 9001
+            - containerPort: 9002
           env:
-            - name: BPL_JVM_THREAD_COUNT
-              value: "50"
+            - name: POLAR_CATALOG_SERVICE_URI
+              value: http://catalog-service
             - name: SPRING_CLOUD_CONFIG_URI
               value: http://config-service
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:postgresql://polar-postgres/polardb_catalog 
-            - name: SPRING_PROFILES_ACTIVE
-              value: testdata
+            - name: SPRING_R2DBC_URL
+              value: r2dbc:postgresql://polar-postgres/polardb_order
+            - name: SPRING_FLYWAY_URL
+              value: jdbc:postgresql://polar-postgres/polardb_order
             - name: SPRING_CLOUD_CONFIG_FAIL_FAST
               value: "true"
-
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: catalog-service
+  name: order-service
   labels:
-    app: catalog-service
+    app: order-service
 spec:
   type: ClusterIP
   selector:
-    app: catalog-service
+    app: order-service
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 9001
+    - protocol: TCP
+      port: 80
+      targetPort: 9002
