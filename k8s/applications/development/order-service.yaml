@@ -33,6 +33,8 @@ spec:
               value: r2dbc:postgresql://polar-postgres/polardb_order
             - name: SPRING_FLYWAY_URL
               value: jdbc:postgresql://polar-postgres/polardb_order
+            - name: SPRING_RABBITMQ_HOST
+              value: polar-rabbitmq
             - name: SPRING_CLOUD_CONFIG_FAIL_FAST
               value: "true"
 
