@@ -43,11 +43,11 @@ services:
       - SPRING_RABBITMQ_HOST=polar-rabbitmq
       # - SPRING_CLOUD_CONFIG_FAIL_FAST=true
 
-  edge-service:
+  polar-edge-service:
     depends_on:
       - polar-redis
-    image: "edge-service"
-    container_name: "edge-service"
+    image: "polar-edge-service"
+    container_name: "polar-edge-service"
     ports:
       - 9000:9000
       - 8000:8000
@@ -59,6 +59,7 @@ services:
       - ORDER_SERVICE_URL=http://order-service:9002
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_DATA_REDIS_HOST=polar-redis
+      - SPA_URL=http://polar-ui:9004
 
   dispatcher-service:
     depends_on:
@@ -75,9 +76,9 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_RABBITMQ_HOST=polar-rabbitmq
   
-  config-service:
-    image: "config-service"
-    container_name: "config-service"
+  polar-config-service:
+    image: "polar-config-service"
+    container_name: "polar-config-service"
     ports:
       - 8888:8888
       - 9888:9888
@@ -115,3 +116,24 @@ services:
       - 15672:15672
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  polar-keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: "polar-keycloak"
+    command: start-dev --import-realm #키클록을 개발 모드로(내장 데이터베이스를 사용해) 시작, 애플리케이션 시작 시 제공된 설정을 import한다.
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    environment:  #어드민 유저의 credential을 환경변수로 정의
+      - KEYCLOAK_ADMIN=user
+      - KEYCLOAK_ADMIN_PASSWORD=password
+    ports:
+      - 8080:8080
+
+  # Front-end
+  polar-ui:
+    image: "ghcr.io/polarbookshop/polar-ui:v1"
+    container_name: "polar-ui"
+    ports:
+      - 9004:9004
+    environment:
+      - PORT=9004
